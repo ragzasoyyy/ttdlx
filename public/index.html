@@ -1,0 +1,80 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>TikTok API - Test Page</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <style>
+    body{font-family:system-ui,Segoe UI,Roboto,Helvetica,Arial;max-width:900px;margin:30px auto;padding:20px}
+    .card{border:1px solid #e6e6e6;padding:16px;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.04)}
+    input,select{padding:8px;width:100%;margin:6px 0;border-radius:6px;border:1px solid #ddd}
+    button{padding:10px 14px;border-radius:8px;border:0;background:#0ea5a4;color:white;cursor:pointer}
+    pre{background:#0f172a;color:#e6eef8;padding:12px;border-radius:6px;overflow:auto}
+    .row{display:flex;gap:10px}
+    .row > *{flex:1}
+  </style>
+</head>
+<body>
+  <h1>TikTok API - Demo</h1>
+  <div class="card">
+    <label>Base API URL (example: https://your-deploy.vercel.app/api/tiktok)</label>
+    <input id="base" placeholder="https://your-deploy.vercel.app/api/tiktok" value="/api/tiktok">
+    <hr>
+    <h3>Download (metadata)</h3>
+    <input id="dl_url" placeholder="TikTok share url (https://vm.tiktok.com/...)">
+    <div class="row">
+      <button onclick="callDownload(false)">Get Metadata</button>
+      <button onclick="callDownload(true)">Stream & Download (dl=1)</button>
+    </div>
+    <pre id="out">Output will appear here...</pre>
+  </div>
+
+  <div style="height:16px"></div>
+
+  <div class="card">
+    <h3>Stalk / User Profile</h3>
+    <input id="stalk_username" placeholder="username (without @)">
+    <div class="row">
+      <button onclick="callStalk()">Stalk</button>
+      <button onclick="callUserPosts()">Get User Posts</button>
+    </div>
+  </div>
+
+  <script>
+    function baseUrl(){ const v = document.getElementById('base').value.trim(); return v || '/api/tiktok'; }
+
+    async function callDownload(stream){
+      const url = document.getElementById('dl_url').value.trim();
+      if(!url){ alert('masukkan url tiktok'); return; }
+      const api = baseUrl() + '?op=download&url=' + encodeURIComponent(url) + (stream ? '&dl=1' : '');
+      if(stream){
+        // for streaming, open in new tab to trigger browser download/stream
+        window.open(api, '_blank');
+        document.getElementById('out').textContent = 'Opened new tab for streaming/download...';
+        return;
+      }
+      const r = await fetch(api);
+      const j = await r.json();
+      document.getElementById('out').textContent = JSON.stringify(j, null, 2);
+    }
+
+    async function callStalk(){
+      const username = document.getElementById('stalk_username').value.trim();
+      if(!username){ alert('masukkan username'); return; }
+      const api = baseUrl() + '?op=stalk&username=' + encodeURIComponent(username);
+      const r = await fetch(api);
+      const j = await r.json();
+      document.getElementById('out').textContent = JSON.stringify(j, null, 2);
+    }
+
+    async function callUserPosts(){
+      const username = document.getElementById('stalk_username').value.trim();
+      if(!username){ alert('masukkan username'); return; }
+      const api = baseUrl() + '?op=getuserposts&username=' + encodeURIComponent(username);
+      const r = await fetch(api);
+      const j = await r.json();
+      document.getElementById('out').textContent = JSON.stringify(j, null, 2);
+    }
+  </script>
+</body>
+</html>
